@@ -1,0 +1,54 @@
+---
+- hosts: all
+  become: true
+  tasks:
+
+  - name: Update all packages in Redhat-based machines
+    become: true
+    yum:
+      name: "*"
+      state: latest      
+      update_cache: yes
+
+  - name: Install software (CentOS)
+    yum:
+      name: "{{ item }}"
+      state: present
+      update_cache: yes
+    with_items:
+          - wget
+          - nano
+          - git 
+           
+  - name: Docker install 
+    shell: "curl -fsSL https://get.docker.com/ | sh"
+
+  - name: Docker enable and start
+    shell: "systemctl start docker && systemctl enable docker"
+
+
+  - name: Add docker user 
+    shell: "sudo usermod -aG docker $(whoami)"
+
+  - name: Add Pulp repo
+    shell: "cd /home/vagrant/ && wget http://repos.fedorapeople.org/repos/pulp/pulp/rhel-pulp.repo"
+          
+  - name: Copy configs
+    copy: 
+      src: "setup.sh"
+      dest: "/home/vagrant/setup.sh"
+  
+ 
+  - name: Copy configs
+    copy:
+      src: "run.sh"
+      dest: "/home/vagrant/run.sh"
+
+  - name: Copy configs
+    copy:
+      src: "server.conf"
+      dest: "/home/vagrant/server.conf" 
+
+  - name: chmod x
+    shell: "cd /home/vagrant/ && chmod +x setup.sh run.sh"
+ 
